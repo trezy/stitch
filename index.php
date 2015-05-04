@@ -12,20 +12,20 @@ require 'config.php';
 $availableClasses = scandir( 'class' );
 
 // Break up the URI
-@list( $resourceClass, $resourceIdentifier, $parameters ) = explode( '/', trim( $_SERVER['REQUEST_URI'], '/' ), 3 );
+@list( $resourceClass, $resourceIdentifier ) = explode( '/', trim( $_SERVER['REQUEST_URI'], '/' ), 2 );
 $resourceClass = ucfirst( strtolower( $resourceClass ) );
 $resourceType = strtolower( pathinfo( $resourceIdentifier, PATHINFO_EXTENSION ) );
 
 $method = strtolower( $_SERVER['REQUEST_METHOD'] );
-$parameters = !empty( $parameters ) ? createKeyValuePairsFromString( $parameters, '/' ) : array();
+$parameters = $_POST;
 
 // Handle the alias/id
-if ( isset( $resourceIdentifier ) && $resourceIdentifier !== 'all' ) {
+if ( isset( $resourceIdentifier ) ) {
   // Figure out if the search parameter is a valid MongoID. If not, assume it's an alias.
   try {
     $parameters['_id'] = new MongoId( $resourceIdentifier );
   } catch ( Exception $e ) {
-    $parameters['alias'] = strtolower( pathinfo( $resourceIdentifier, PATHINFO_FILENAME ) );
+    $parameters['alias'] = urldecode( pathinfo( $resourceIdentifier, PATHINFO_FILENAME ) );
   };
 };
 

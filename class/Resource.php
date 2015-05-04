@@ -6,6 +6,7 @@ abstract class Resource {
 
   public $collection;
   public $fields = array();
+  public $keyFields = array();
 
   protected function connect () {
     $mongo = 'mongodb://';

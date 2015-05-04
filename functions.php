@@ -67,6 +67,22 @@
   /*------------------------------------*\
     TODO: Describe function.
   \*------------------------------------*/
+  function formatDate ( $date ) {
+    $format = 'j F Y';
+    $dateArr = explode( ' ', date( $format, $date ) );
+    $date =
+      '<span class="date">' .
+      '<span class="day">' . $dateArr[0] . '</span>' .
+      '<span class="month">' . $dateArr[1] . '</span>' .
+      '<span class="year">' . $dateArr[2] . '</span>' .
+      '</span>';
+
+    return $date;
+  };
+
+  /*------------------------------------*\
+    TODO: Describe function.
+  \*------------------------------------*/
   function getResources ( $resourceDatabase, $filters ) {
     if ( $arguments[2] ) {
       if ( $resourceDatabase -> find( array( 'alias' ) ) -> count() > 0 ) {
@@ -95,16 +111,17 @@
   /*------------------------------------*\
     TODO: Describe function.
   \*------------------------------------*/
-  function formatDate ( $date ) {
-    $format = 'j F Y';
-    $dateArr = explode( ' ', date( $format, $date ) );
-    $date =
-      '<span class="date">' .
-      '<span class="day">' . $dateArr[0] . '</span>' .
-      '<span class="month">' . $dateArr[1] . '</span>' .
-      '<span class="year">' . $dateArr[2] . '</span>' .
-      '</span>';
+  function sanitizeString ( $string ) {
+    // Remove all special characters
+    $string = preg_replace('/[^A-Za-z0-9\-]/', '', $string);
 
-    return $date;
+    // Remove capitalization
+    $string = strtolower( $string );
+
+    // Replace spaces with hyphens
+    $string = str_replace( ' ', '-', $string );
+
+    // Return the sanitized string
+    return $string;
   };
 }; ?>
