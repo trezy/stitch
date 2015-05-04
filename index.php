@@ -13,26 +13,25 @@ $availableClasses = scandir( 'class' );
 
 // Break up the URI
 @list( $resourceClass, $resourceIdentifier, $parameters ) = explode( '/', trim( $_SERVER['REQUEST_URI'], '/' ), 3 );
-
 $resourceClass = ucfirst( strtolower( $resourceClass ) );
 $resourceType = strtolower( pathinfo( $resourceIdentifier, PATHINFO_EXTENSION ) );
-$resourceIdentifier = strtolower( pathinfo( $resourceIdentifier, PATHINFO_FILENAME ) );
+
 $method = strtolower( $_SERVER['REQUEST_METHOD'] );
 $parameters = !empty( $parameters ) ? createKeyValuePairsFromString( $parameters, '/' ) : array();
 
 // Handle the alias/id
-if ( $resourceIdentifier && $resourceIdentifier !== 'all' ) {
+if ( isset( $resourceIdentifier ) && $resourceIdentifier !== 'all' ) {
   // Figure out if the search parameter is a valid MongoID. If not, assume it's an alias.
   try {
     $parameters['_id'] = new MongoId( $resourceIdentifier );
   } catch ( Exception $e ) {
-    $parameters['alias'] = $resourceIdentifier;
+    $parameters['alias'] = strtolower( pathinfo( $resourceIdentifier, PATHINFO_FILENAME ) );
   };
 };
 
 // Set Access-Control-Allow-Origin header ( prevents access to the API from other sites )
 if ( defined( 'CORS_DOMAIN' ) ) {
-  header( 'Access-Control-Allow-Origin: http://trezy.com' );
+  header( 'Access-Control-Allow-Origin: ' . CORS_DOMAIN );
 } else {
   header( 'Access-Control-Allow-Origin: *' );
 };
