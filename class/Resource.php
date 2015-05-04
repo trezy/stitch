@@ -8,6 +8,43 @@ abstract class Resource {
   public $fields = array();
   public $keyFields = array();
 
+
+
+
+
+  public function __call ( $method, $arguments ) {
+    header( 'HTTP/1.1 405 Method Not Allowed', true, 405 );
+    header( 'Allow: ' . join($this->allowedHttpMethods(), ', ' ) );
+  }
+
+
+
+
+
+  public function __construct ( array $parameters ) {
+    $this -> parameters = $parameters;
+    $this -> database = $this -> connect();
+  }
+
+
+
+
+
+  protected function allowedHttpMethods () {
+    $allowedMethods = array();
+    $reflection = new ReflectionClass( $this );
+
+    foreach ( $reflection -> getMethods( ReflectionMethod::IS_PUBLIC ) as $reflectionMethod ) {
+      $myMethods[] = strtoupper( $rm -> name );
+    };
+
+    return array_intersect( self::$httpMethods, $allowedMethods );
+  }
+
+
+
+
+
   protected function connect () {
     $mongo = 'mongodb://';
 
@@ -33,30 +70,73 @@ abstract class Resource {
     return $mongo -> {MDB_DATABASE} -> {$this -> collection};
   }
 
-  protected function allowedHttpMethods () {
-    $allowedMethods = array();
-    $reflection = new ReflectionClass( $this );
 
-    foreach ( $reflection -> getMethods( ReflectionMethod::IS_PUBLIC ) as $reflectionMethod ) {
-      $myMethods[] = strtoupper( $rm -> name );
+
+
+
+  protected function find () {
+    return iterator_to_array( $this -> database -> find( $this -> parameters ) );
+  }
+
+
+
+
+
+  protected function findOne () {
+    return $this -> database -> findOne( $this -> parameters );
+  }
+
+
+
+
+
+  public function hasDuplicates () {
+    $duplicates = array();
+
+    forEach( $this -> keyFields as $field ) {
+      if ( isset( $this -> parameters[$field] ) && $this -> database -> findOne( array( $field => $this -> parameters[$field] ) ) ) {
+        $duplicates[] = $field;
+      };
     };
 
-    return array_intersect( self::$httpMethods, $allowedMethods );
+    if ( !count ( $duplicates ) ) {
+      $duplicates = false;
+    };
+
+    return $duplicates;
   }
+
+
+
+
 
   protected function printJSON ( $results ) {
     header('Content-Type: application/json');
     echo json_encode( $results );
   }
 
-  public function __construct ( array $parameters ) {
-    $this -> parameters = $parameters;
-    $this -> database = $this -> connect();
+
+
+
+
+  protected function remove () {
+    return $this -> database -> remove( $this -> parameters );
   }
 
-  public function __call ( $method, $arguments ) {
-    header( 'HTTP/1.1 405 Method Not Allowed', true, 405 );
-    header( 'Allow: ' . join($this->allowedHttpMethods(), ', ' ) );
+
+
+
+
+  protected function save () {
+    return $this -> database -> save( $this -> parameters );
+  }
+
+
+
+
+
+  protected function update () {
+    return $this -> save();
   }
 }
 }; ?>

@@ -10,54 +10,32 @@ class Users extends Resource {
 
 
 
-  public function hasDuplicates () {
-    $duplicates = array();
-
-    forEach( $this -> keyFields as $field ) {
-      if ( isset( $this -> parameters[$field] ) && $this -> database -> findOne( array( $field => $this -> parameters[$field] ) ) ) {
-        $duplicates[] = $field;
-      };
-    };
-
-    if ( !count ( $duplicates ) ) {
-      $duplicates = false;
-    };
-
-    return $duplicates;
-  }
-
-
-
-
-
   public function get () {
-    $keyFieldSet = false;
-
     foreach ( $this -> keyFields as $keyField ) {
       if ( isset( $this -> parameters[$keyField] ) ) {
         $keyFieldSet = true;
       };
     };
 
-    if ( $keyFieldSet ) {
-      $results = $this -> database -> findOne( $this -> parameters, $this -> fields );
+    if ( count( array_intersect_key( $this -> parameters, $this -> keyFields ) ) > 0 ) {
+      $results = $this -> findOne();
 
     } else {
-      $results = iterator_to_array( $this -> database -> find( $this -> parameters, $this -> fields ) );
+      $results = $this -> find();
     };
 
     /*------------------------------------*\
       Success
     \*------------------------------------*/
     if ( isset( $results ) ) {
-      header('HTTP/1.1 200 OK', true, 200);
+      header( 'HTTP/1.1 200 OK', true, 200 );
       $this -> printJSON( $results );
 
     /*------------------------------------*\
       Failure
     \*------------------------------------*/
     } else {
-      header('HTTP/1.1 404 Not Found', true, 404);
+      header( 'HTTP/1.1 404 Not Found', true, 404 );
     };
   }
 
@@ -67,23 +45,12 @@ class Users extends Resource {
 
   public function post () {
     if ( $duplicateFields = $this -> hasDuplicates() ) {
-      header('HTTP/1.1 409 Conflict', true, 409);
-
-      $isFirst = true;
-      echo 'This is a duplicate entry. Please change the following fields: ';
-      foreach ( $duplicateFields as $field ) {
-        if ( !$isFirst ) {
-          echo ', ';
-        };
-
-        echo $field;
-
-        $isFirst = false;
-      };
+      header( 'HTTP/1.1 409 Conflict', true, 409 );
+      echo 'This is a duplicate entry. Please change the following fields: ' . join( $duplicateFields, ', ' );
 
     } else {
-      header('HTTP/1.1 201 Created', true, 201);
-      $this -> database -> save( $this -> parameters );
+      header( 'HTTP/1.1 201 Created', true, 201 );
+      $this -> save();
     };
   }
 
@@ -104,31 +71,20 @@ class Users extends Resource {
       $resourceFound = false;
 
       foreach ( $this -> keyFields as $keyField ) {
-        if ( $result = $this -> database -> findOne ( array( $keyField => $this -> parameters['_id'] ) ) ) {
-          header('HTTP/1.1 204 No Content', true, 204);
-          $this -> database -> remove( $this -> parameters );
+        if ( $result = $this -> findOne() ) {
+          header( 'HTTP/1.1 204 No Content', true, 204 );
+          $this -> remove();
           $resourceFound = true;
         };
       };
 
       if ( ! $resourceFound ) {
-        header('HTTP/1.1 404 Not Found', true, 404);
+        header( 'HTTP/1.1 404 Not Found', true, 404 );
       };
 
     } else {
-      header('HTTP/1.1 400 Bad Request', true, 400);
-
-      $isFirst = true;
-      echo 'An identifier must be provided. The following fields are accepted: ';
-      foreach ( $this -> keyFields as $keyField ) {
-        if ( !$isFirst ) {
-          echo ', ';
-        };
-
-        echo $keyField;
-
-        $isFirst = false;
-      };
+      header( 'HTTP/1.1 400 Bad Request', true, 400 );
+      echo 'An identifier must be provided. The following fields are accepted: ' . join( $this -> keyFields );
     };
   }
 
