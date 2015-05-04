@@ -25,9 +25,10 @@ if ( isset( $resourceIdentifier ) ) {
   try {
     $parameters['_id'] = new MongoId( $resourceIdentifier );
   } catch ( Exception $e ) {
-    $parameters['alias'] = urldecode( pathinfo( $resourceIdentifier, PATHINFO_FILENAME ) );
+    $parameters['_id'] = urldecode( pathinfo( $resourceIdentifier, PATHINFO_FILENAME ) );
   };
 };
+print_r( $resourceIdentifier );
 
 // Set Access-Control-Allow-Origin header ( prevents access to the API from other sites )
 if ( defined( 'CORS_DOMAIN' ) ) {
