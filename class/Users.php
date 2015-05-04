@@ -11,12 +11,6 @@ class Users extends Resource {
 
 
   public function get () {
-    foreach ( $this -> keyFields as $keyField ) {
-      if ( isset( $this -> parameters[$keyField] ) ) {
-        $keyFieldSet = true;
-      };
-    };
-
     if ( count( array_intersect_key( $this -> parameters, $this -> keyFields ) ) > 0 ) {
       $results = $this -> findOne();
 
