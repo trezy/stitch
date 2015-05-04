@@ -1,7 +1,7 @@
 <?php if ( !defined( 'SECURE' ) ) { exit; } else {
 class Users extends Resource {
   public $collection = 'users';
-  public $keyFields = array(
+  public $indexFields = array(
     '_id',
     'email'
   );
@@ -11,7 +11,7 @@ class Users extends Resource {
 
 
   public function get () {
-    if ( count( array_intersect_key( $this -> parameters, $this -> keyFields ) ) > 0 ) {
+    if ( count( array_intersect_key( $this -> parameters, $this -> indexFields ) ) > 0 ) {
       $results = $this -> findOne();
 
     } else {
@@ -61,24 +61,31 @@ class Users extends Resource {
 
 
   public function delete () {
-    if ( isset ( $this -> parameters['_id'] ) ) {
-      $resourceFound = false;
+    $resourceFound = false;
 
-      foreach ( $this -> keyFields as $keyField ) {
-        if ( $result = $this -> findOne() ) {
+    if ( isset ( $this -> parameters['_id'] ) ) {
+      if ( $result = $this -> findOne() ) {
+        header( 'HTTP/1.1 204 No Content', true, 204 );
+        $this -> remove();
+        $resourceFound = true;
+      };
+
+    } else if ( isset ( $this -> parameters['id'] ) ) {
+      foreach ( $this -> indexFields as $indexField ) {
+        if ( $result = $this -> findOne( $indexField ) ) {
           header( 'HTTP/1.1 204 No Content', true, 204 );
-          $this -> remove();
+          //$this -> remove();
           $resourceFound = true;
         };
       };
 
-      if ( ! $resourceFound ) {
-        header( 'HTTP/1.1 404 Not Found', true, 404 );
-      };
-
     } else {
       header( 'HTTP/1.1 400 Bad Request', true, 400 );
-      echo 'An identifier must be provided. The following fields are accepted: ' . join( $this -> keyFields );
+      echo 'An identifier must be provided. The following fields are accepted: ' . join( $this -> indexFields );
+    };
+
+    if ( ! $resourceFound ) {
+      header( 'HTTP/1.1 404 Not Found', true, 404 );
     };
   }
 

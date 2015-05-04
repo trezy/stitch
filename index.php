@@ -14,7 +14,6 @@ $availableClasses = scandir( 'class' );
 // Break up the URI
 @list( $resourceClass, $resourceIdentifier ) = explode( '/', trim( $_SERVER['REQUEST_URI'], '/' ), 2 );
 $resourceClass = ucfirst( strtolower( $resourceClass ) );
-$resourceType = strtolower( pathinfo( $resourceIdentifier, PATHINFO_EXTENSION ) );
 
 $method = strtolower( $_SERVER['REQUEST_METHOD'] );
 $parameters = $_POST;
@@ -25,10 +24,9 @@ if ( isset( $resourceIdentifier ) ) {
   try {
     $parameters['_id'] = new MongoId( $resourceIdentifier );
   } catch ( Exception $e ) {
-    $parameters['_id'] = urldecode( pathinfo( $resourceIdentifier, PATHINFO_FILENAME ) );
+    $parameters['id'] = urldecode( $resourceIdentifier );
   };
 };
-print_r( $resourceIdentifier );
 
 // Set Access-Control-Allow-Origin header ( prevents access to the API from other sites )
 if ( defined( 'CORS_DOMAIN' ) ) {

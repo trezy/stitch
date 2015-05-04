@@ -6,7 +6,7 @@ abstract class Resource {
 
   public $collection;
   public $fields = array();
-  public $keyFields = array();
+  public $indexFields = array();
 
 
 
@@ -83,7 +83,15 @@ abstract class Resource {
 
 
   protected function findOne () {
-    return $this -> database -> findOne( $this -> parameters );
+    $parameters = array();
+
+    if ( func_num_args() > 0 && $this -> parameters['id'] ) {
+      $parameters[func_get_arg( 0 )] = $this -> parameters['id'];
+    } else {
+      $parameters = $this -> parameters;
+    };
+
+    return $this -> database -> findOne( $parameters );
   }
 
 
@@ -93,7 +101,7 @@ abstract class Resource {
   public function hasDuplicates () {
     $duplicates = array();
 
-    forEach( $this -> keyFields as $field ) {
+    forEach( $this -> indexFields as $field ) {
       if ( isset( $this -> parameters[$field] ) && $this -> database -> findOne( array( $field => $this -> parameters[$field] ) ) ) {
         $duplicates[] = $field;
       };
