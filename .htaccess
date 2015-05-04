@@ -1,0 +1,10 @@
+# Enable the rewrite engine
+RewriteEngine On
+RewriteBase /
+
+# Send all links back to the index page to be handled
+RewriteRule ^index\.php$ - [L,NC]
+RewriteRule ^animate\/build\.php$ - [L,NC]
+RewriteCond %{REQUEST_FILENAME} !-f
+RewriteCond %{REQUEST_FILENAME} !-d
+RewriteRule . /index.php [L]
