@@ -1,49 +1,30 @@
 <?php if ( !defined( 'SECURE' ) ) { exit; } else {
 class Blog extends Resource {
-  public $collection = 'blog';
-
-  public $fields = array(
-    'alias',
-    'datePublished',
-    'content',
-    'title',
-    'status'
-  );
+  public $collection = 'blogs';
 
   public function get () {
-    // Check to see if the requested resource exists
-    if ( $this -> database -> find( $this -> parameters ) -> count() > 0 ) {
+    if ( isset( $resourceIdentifier ) ) {
+      $results = $this -> database -> findOne( $this -> parameters, $this -> fields );
+    } else {
+      $results = $this -> database -> find( $this -> parameters, $this -> fields );
+    };
 
-      if ( $resources = $this -> database -> find( $this -> parameters, $this -> fields ) ) {
-        $resources = iterator_to_array( $resources );
+    /*------------------------------------*\
+      Success
+    \*------------------------------------*/
+    if ( isset( $results ) ) {
+      header('HTTP/1.1 200 OK', true, 200);
+      $this -> printJSON( iterator_to_array( $results ) );
 
-        if ($resourceIdentifier === 'all') {
-          $resources = array_pop($resources);
-        };
-
-        switch ($resourceType) {
-          case 'json':
-          default:
-            header('Content-Type: application/json');
-            echo json_encode($resources);
-            break;
-        };
-
-      } else {
-        header('HTTP/1.1 404 Not Found', true, 404);
-      };
-
+    /*------------------------------------*\
+      Failure
+    \*------------------------------------*/
     } else {
       header('HTTP/1.1 404 Not Found', true, 404);
     };
   }
 
-  public function post () {
-    /*------------------------------------*\
-      Success
-    \*------------------------------------*/
-    header('HTTP/1.1 200 Created', true, 200);
-  }
+  public function post () {}
 
   public function put () {}
 

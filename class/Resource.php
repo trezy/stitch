@@ -5,13 +5,13 @@ abstract class Resource {
   protected $parameters;
 
   public $collection;
-  public $fields;
+  public $fields = array();
 
   protected function connect () {
     $mongo = 'mongodb://';
 
     if ( defined( 'MDB_USERNAME' ) ) {
-      $mongo = $mongo . MDB_USERNAME . ':' . MDB_PASSWORD;
+      $mongo = $mongo . MDB_USERNAME . ':' . MDB_PASSWORD . '@';
     };
 
     if ( defined( 'MDB_SERVER' ) ) {
@@ -41,6 +41,11 @@ abstract class Resource {
     };
 
     return array_intersect( self::$httpMethods, $allowedMethods );
+  }
+
+  protected function printJSON ( $results ) {
+    header('Content-Type: application/json');
+    echo json_encode( $results );
   }
 
   public function __construct ( array $parameters ) {
